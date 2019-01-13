@@ -1,0 +1,9 @@
+plugins {
+  id 'idea'
+}
+
+group 'mychat'
+version '0.1.0-SNAPSHOT'
+
+subprojects {
+}
