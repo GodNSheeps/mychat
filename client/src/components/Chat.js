@@ -1,4 +1,5 @@
 import React from 'react';
+import ChatWindowContainer from "../containers/ChatWindowContainer";
 
 export default ({handleSendText}) => (
     <div className="container">
@@ -6,10 +7,7 @@ export default ({handleSendText}) => (
             <div className="col-1" />
             <div className="col">
                 <h1>Chat</h1>
-                <div className="border border-dark rounded" style={{
-                    width: '100%',
-                    height: '20rem'
-                }} />
+                <ChatWindowContainer />
                 <div style={{ height: '0.5rem' }} />
                 <form action="#" onSubmit={handleSendText}>
                     <div className="input-group">

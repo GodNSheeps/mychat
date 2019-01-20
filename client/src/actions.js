@@ -1,7 +1,8 @@
 import * as at from "./constants/ActionTypes";
 
-function sendText() {
+export function sendText(id, text) {
     return {
-        type: at.SEND_TEXT
-    }
+        type: at.SEND_TEXT,
+        payload: { id, text }
+    };
 }
