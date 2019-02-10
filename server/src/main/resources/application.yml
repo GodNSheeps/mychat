@@ -1,0 +1,6 @@
+mychat.oauth.github:
+  client-id: 53475d5d370f814911ff
+  client-secret: efee664c6966478af611887ad636066c295d6af9
+
+logging.level:
+  com.github.godnsheeps.mychat: TRACE

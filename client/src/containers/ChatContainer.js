@@ -8,19 +8,19 @@ import {sendText} from '../actions';
 class ChatContainer extends React.Component {
     handleSendText(e) {
         e.preventDefault();
-        console.log(e.target.text.value);
-        this.props.dispatch(sendText("JCooky", e.target.text.value));
+        const {profile} = this.props;
+
+        this.props.sendText(profile.login, e.target.text.value);
     }
 
     render() {
-        return (
-            <Chat handleSendText={::this.handleSendText} />
-        )
+        const {profile} = this.props;
+
+        if (profile) {
+            return <Chat name={profile.login} handleSendText={::this.handleSendText} />;
+        }
+        return null;
     }
 }
 
-function mapToPropsDispatch(dispatch) {
-    return {dispatch};
-}
-
-export default connect(null, mapToPropsDispatch)(ChatContainer);
+export default connect(s => s.oauth, d => bindActionCreators({sendText}, d))(ChatContainer);

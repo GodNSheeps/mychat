@@ -1,7 +1,7 @@
 import React from 'react';
 import ChatWindowContainer from "../containers/ChatWindowContainer";
 
-export default ({handleSendText}) => (
+export default ({name, handleSendText}) => (
     <div className="container">
         <div className="row">
             <div className="col-1" />
@@ -12,7 +12,7 @@ export default ({handleSendText}) => (
                 <form action="#" onSubmit={handleSendText}>
                     <div className="input-group">
                         <div className="input-group-prepend">
-                            <span className="input-group-text">JCooky</span>
+                            <span className="input-group-text">{name}</span>
                         </div>
                         <input type="text" className="form-control" placeholder="Put text for the chat" name="text" />
                         <div className="input-group-append">

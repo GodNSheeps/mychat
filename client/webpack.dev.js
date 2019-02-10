@@ -5,7 +5,7 @@ module.exports = {
     mode: 'development',
     context: __dirname,
     entry: [
-        './src/app.js'
+        'babel-polyfill', './src/app.js'
     ],
     output: {
         path: __dirname + "/jsbuild",
