@@ -3,7 +3,6 @@ package com.github.godnsheeps.mychat.domain;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,14 +12,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 @Data
 @Builder
-public class User {
+public class Message {
     @Id
     private String id;
 
-    @Indexed
-    private Integer githubId;
-    
-    private String name;
+    @DBRef
+    private User from;
 
+    private String text;
+    private Long timestamp = System.currentTimeMillis();
 
+    @DBRef
+    private Chat chat;
 }
