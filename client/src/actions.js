@@ -9,10 +9,11 @@ class NullSocket {
 
 let github = null;
 let socket = new NullSocket();
+let mychatToken = null;
 
 export function sendText(id, text) {
     return dispatch => {
-        return socket.send(JSON.stringify({id, text}));
+        return socket.send(JSON.stringify({fromToken: mychatToken, message: text}));
     };
 }
 
@@ -36,6 +37,7 @@ export function getAccessTokenForGithub(code) {
             .then(t => {
                 console.debug("Recive Access token");
 
+                mychatToken = t.data.token;
                 dispatch({
                     type: at.RECV_ACCESS_TOKEN,
                     payload: t.data
