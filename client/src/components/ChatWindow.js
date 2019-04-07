@@ -1,7 +1,7 @@
 import React from 'react';
-import _ from 'lodash';
+import MessageContainer from "../containers/MessageContainer";
 
-export default ({windowRef, bodies}) => (
+export default ({windowRef, name, bodies}) => (
     <div className="border border-dark rounded" style={{
         width: '100%',
         height: '20rem',
@@ -9,10 +9,6 @@ export default ({windowRef, bodies}) => (
         paddingTop: '0.25rem',
         overflow: 'auto'
     }} ref={windowRef}>
-        {_.map(bodies, (v) => {
-            return (
-                <div style={{width: '100%'}}>{v.id + " : " + v.text}</div>
-            );
-        })}
+        <MessageContainer/>
     </div>
 );
