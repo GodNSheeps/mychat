@@ -6,7 +6,7 @@ module.exports = {
     mode: 'production',
     context: __dirname,
     entry: [
-        './src/app.js'
+        'babel-polyfill', './src/app.js'
     ],
     output: {
         path: __dirname + '/build/webpack/META-INF/resources/webjars/' + packageJson.name + '/' + packageJson.version,

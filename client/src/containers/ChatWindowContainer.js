@@ -5,9 +5,20 @@ import _ from 'lodash';
 import ChatWindow from '../components/ChatWindow';
 
 class ChatWindowContainer extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.$window = React.createRef();
+    }
+
+    componentDidUpdate() {
+        this.$window.current.scrollTo(0, Number.MAX_SAFE_INTEGER);
+    }
+
     render() {
+        console.debug("Render chat window");
         return (
-            <ChatWindow bodies={this.props.bodies} />
+            <ChatWindow windowRef={this.$window} bodies={this.props.bodies} />
         );
     }
 }
