@@ -22,5 +22,11 @@ dependencies {
     implementation 'org.webjars:webjars-locator-core'
     implementation 'javax.websocket:javax.websocket-api'
 
+    implementation 'com.google.guava:guava:27.0.1-jre'
+    implementation 'io.jsonwebtoken:jjwt-api:0.10.5'
+    runtime 'io.jsonwebtoken:jjwt-impl:0.10.5'
+    runtime 'io.jsonwebtoken:jjwt-jackson:0.10.5'
+
+
     implementation project(':client')
 }
