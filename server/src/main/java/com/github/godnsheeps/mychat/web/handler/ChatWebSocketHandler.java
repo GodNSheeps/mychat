@@ -57,38 +57,47 @@ public class ChatWebSocketHandler implements WebSocketHandler {
 
         log.trace("sessions: {}", sessions.size());
 
-        return session
-                .receive()
-                .doOnComplete(() -> {
-                    sessions.remove(session);
-                })
-                .map(Functions.wrapError(m -> objectMapper.readValue(m.getPayloadAsText(), RequestPayload.class)))
-                .flatMap(payload -> {
-                    var userId = Jwts.parser().setSigningKey(MyChatServerApplication.SECRET_KEY)
-                            .parseClaimsJws(payload.fromToken)
-                            .getBody().getId();
-                    return Mono.zip(userRepository.findById(userId),
-                            chatRepository.findById(MyChatServerApplication.rootChatId),
-                            Mono.just(payload));
-                })
-                .flatMap(t -> {
-                    var message = t.getT3().message;
-                    return Mono.zip(Mono.just(message),
-                            messageRepository.save(Message.builder()
-                                    .chat(t.getT2())
-                                    .from(t.getT1())
-                                    .text(message)
-                                    .build()));
-                })
-                .map(t -> ResponsePayload.builder()
-                        .text(t.getT1())
-                        .username(t.getT2().getFrom().getName())
-                        .build())
-                .map(Functions.wrapError(objectMapper::writeValueAsString))
-                .flatMap(m -> Flux.fromStream(sessions.stream())
-                        .flatMap(s -> s.send(Mono.just(s.textMessage(m)))))
-                .log(log)
-                .collectList()
+
+        return session.send(
+                chatRepository.findById(MyChatServerApplication.rootChatId)
+                        .flux()
+                        .flatMap(chat -> messageRepository.findByChat(chat))
+                        .map(message -> ResponsePayload.builder().text(message.getText()).username(message.getFrom().getName()).build())
+                        .map(Functions.wrapError(objectMapper::writeValueAsString))
+                        .map(session::textMessage))
+                .then(session
+                        .receive()
+                        .doOnComplete(() -> {
+                            sessions.remove(session);
+                        })
+                        .map(Functions.wrapError(m -> objectMapper.readValue(m.getPayloadAsText(), RequestPayload.class)))
+                        .flatMap(payload -> {
+                            var userId = Jwts.parser().setSigningKey(MyChatServerApplication.SECRET_KEY)
+                                    .parseClaimsJws(payload.fromToken)
+                                    .getBody().getId();
+                            return Mono.zip(userRepository.findById(userId),
+                                    chatRepository.findById(MyChatServerApplication.rootChatId),
+                                    Mono.just(payload));
+                        })
+                        .flatMap(t -> {
+                            var message = t.getT3().message;
+                            return Mono.zip(Mono.just(message),
+                                    messageRepository.save(Message.builder()
+                                            .chat(t.getT2())
+                                            .from(t.getT1())
+                                            .text(message)
+                                            .build()));
+                        })
+                        .map(t -> ResponsePayload.builder()
+                                .text(t.getT1())
+                                .username(t.getT2().getFrom().getName())
+                                .build())
+                        .map(Functions.wrapError(objectMapper::writeValueAsString))
+                        .flatMap(m -> Flux.fromStream(sessions.stream())
+                                .flatMap(s -> s.send(Mono.just(s.textMessage(m)))))
+                        .log(log)
+                        .collectList()
+                )
                 .then();
     }
 
