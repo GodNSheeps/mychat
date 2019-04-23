@@ -7,26 +7,21 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
-
-/**
- * @author jcooky
- */
 @Document
 @Data
 @Builder
-public class Message {
+public class Content {
+
     @Id
     private String id;
 
-    @DBRef
-    private User from;
-
-    private Long timestamp = System.currentTimeMillis();
+    private boolean isUser;
 
     @DBRef
-    private Chat chat;
+    @Nullable
+    private User user;
 
-    @DBRef
-    private List<Content> contents;
+    @Nullable
+    private String text;
+
 }
