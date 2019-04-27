@@ -11,7 +11,7 @@ export default function(state = defaultState, action) {
                 bodies: [
                     ...state.bodies, {
                     id: action.payload.username,
-                    text: action.payload.text,
+                    contents: action.payload.contents,
                 }]
             };
         default:

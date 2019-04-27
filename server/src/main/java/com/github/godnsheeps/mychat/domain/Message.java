@@ -27,6 +27,5 @@ public class Message {
     @DBRef
     private Chat chat;
 
-    @DBRef
     private List<Content> contents;
 }

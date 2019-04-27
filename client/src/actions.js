@@ -21,7 +21,6 @@ export function joinChat() {
     socket = new WebSocket("ws://localhost:8080/chat");
     return dispatch => {
         socket.onmessage = msg => {
-            console.log("receive test");
             const payload = JSON.parse(msg.data);
             dispatch({
                 type: at.RECV_TEXT,

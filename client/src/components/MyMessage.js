@@ -1,14 +1,16 @@
 import React from 'react';
+import _ from "lodash";
+import ContentContainer from "../containers/ContentContainer"
 
 export default ({body}) => (
-    <div style={{width: '100%', textAlign: 'right'}}>
+    <div style={{width: '100%', display: 'inline-block'}}>
         <div style={{backgroundColor: 'cornflowerblue',
+                    display: 'table',
                     color: 'white',
-                    marginLeft: '20rem',
+                    float: 'right',
                     marginRight: '0.5rem',
-                    marginBottom: '0.5rem',
-                    paddingRight: '1%'}}>
-            {body.text}
+                    padding: '0.5%'}}>
+            <ContentContainer contents={body.contents}/>
         </div>
     </div>
 )
