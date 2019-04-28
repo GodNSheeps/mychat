@@ -62,7 +62,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                 chatRepository.findById(MyChatServerApplication.rootChatId)
                         .flux()
                         .flatMap(chat -> messageRepository.findByChat(chat))
-                        .map(message -> ResponsePayload.builder().text(message.getText()).username(message.getFrom().getName()).build())
+                        .map(message -> ResponsePayload.builder().text(message.getText()).id(message.getId()).username(message.getFrom().getName()).build())
                         .map(Functions.wrapError(objectMapper::writeValueAsString))
                         .map(session::textMessage))
                 .then(session
@@ -90,6 +90,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                         })
                         .map(t -> ResponsePayload.builder()
                                 .text(t.getT1())
+                                .id(t.getT2().getId())
                                 .username(t.getT2().getFrom().getName())
                                 .build())
                         .map(Functions.wrapError(objectMapper::writeValueAsString))
@@ -112,5 +113,6 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     public static class ResponsePayload {
         String username;
         String text;
+        String id;
     }
 }

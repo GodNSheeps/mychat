@@ -3,6 +3,7 @@ package com.github.godnsheeps.mychat;
 import com.github.godnsheeps.mychat.domain.Chat;
 import com.github.godnsheeps.mychat.domain.ChatRepository;
 import com.github.godnsheeps.mychat.web.handler.ChatWebSocketHandler;
+import com.github.godnsheeps.mychat.web.handler.MentionHandler;
 import com.github.godnsheeps.mychat.web.handler.OpenAuthHandler;
 import com.github.godnsheeps.mychat.web.handler.UserHandler;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -39,11 +40,14 @@ public class MyChatServerApplication implements CommandLineRunner {
     }
 
     @Bean
-    public RouterFunction<ServerResponse> routes(OpenAuthHandler openAuthHandler, UserHandler userHandler) {
+    public RouterFunction<ServerResponse> routes(OpenAuthHandler openAuthHandler, UserHandler userHandler, MentionHandler mentionHandler) {
         return route()
                 .GET("/", (req) -> ServerResponse.ok().render("index"))
 //                .GET("/users/{id}/chats", userHandler::getChatsByUser)
                 .GET("/oauth/github/access-token", openAuthHandler::getAccessTokenForGithub)
+                .GET("/mentions", mentionHandler::getMention)
+                .PUT("/mentions", mentionHandler::readMention)
+                .POST("/mentions", mentionHandler::createMention)
                 .build();
     }
 

@@ -1,13 +1,14 @@
 import React from 'react';
 import ChatWindowContainer from "../containers/ChatWindowContainer";
+import MentionWindowContainer from "../containers/MentionWindowContainer";
 
-export default ({name, handleSendText}) => (
+export default ({window, name, handleSendText}) => (
     <div className="container">
         <div className="row">
             <div className="col-1" />
             <div className="col">
                 <h1>Chat</h1>
-                <ChatWindowContainer />
+                <ChatWindowContainer window={window}/>
                 <div style={{ height: '0.5rem' }} />
                 <form action="#" onSubmit={handleSendText}>
                     <div className="input-group">
@@ -20,6 +21,7 @@ export default ({name, handleSendText}) => (
                         </div>
                     </div>
                 </form>
+                <MentionWindowContainer window={window} />
             </div>
             <div className="col-1" />
         </div>
