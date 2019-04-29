@@ -1,5 +1,5 @@
 import React from 'react';
-import _ from 'lodash';
+
 import {connect} from 'react-redux';
 
 import MyMessage from "../components/MyMessage";
@@ -11,18 +11,15 @@ class MessageContainer extends React.Component {
     }
 
     render() {
-        const {chat, oauth} = this.props;
-        return _.map(chat.bodies, (v) => {
-            if (v.id == oauth.profile.login)
-                return <MyMessage body={v}/>;
-            else
-                return <OtherMessage body={v}/>;
-            });
+
+        const {profile} = this.props;
+        const {message} = this.props;
+        console.debug(message)
+        if (message.id === profile.login)
+            return <MyMessage body={message}/>;
+        else
+            return <OtherMessage body={message}/>;
     }
 }
 
-function mapToPropsState({chat, oauth}) {
-    return {chat, oauth};
-}
-
-export default connect(mapToPropsState)(MessageContainer);
+export default connect(s => s.oauth)(MessageContainer);

@@ -6,6 +6,10 @@ import Chat from '../components/Chat';
 import {sendText} from '../actions';
 
 class ChatContainer extends React.Component {
+    constructor(props) {
+        super(props);
+        this.$window = React.createRef();
+    }
     handleSendText(e) {
         e.preventDefault();
         const {profile} = this.props;
@@ -17,7 +21,7 @@ class ChatContainer extends React.Component {
         const {profile} = this.props;
 
         if (profile) {
-            return <Chat name={profile.login} handleSendText={::this.handleSendText} />;
+            return <Chat window={this.$window} name={profile.login} handleSendText={::this.handleSendText} />;
         }
         return null;
     }

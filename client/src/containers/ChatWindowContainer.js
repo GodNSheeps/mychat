@@ -7,22 +7,20 @@ import ChatWindow from '../components/ChatWindow';
 class ChatWindowContainer extends React.Component {
     constructor(props) {
         super(props);
-        this.$window = React.createRef();
     }
 
     componentDidUpdate() {
-        this.$window.current.scrollTo(0, Number.MAX_SAFE_INTEGER);
+        const {window} = this.props;
+        window.current.scrollTo(0, Number.MAX_SAFE_INTEGER);
     }
 
     render() {
+        console.debug("Render chat window");
+        const {window} = this.props;
         return (
-            <ChatWindow windowRef={this.$window} bodies={this.props.chat.bodies} />
+            <ChatWindow windowRef={window}/>
         );
     }
 }
 
-function mapToPropsState({chat, oauth}) {
-    return {chat, oauth};
-}
-
-export default connect(mapToPropsState)(ChatWindowContainer);
+export default connect(s => s.chat)(ChatWindowContainer);

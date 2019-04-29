@@ -1,18 +1,22 @@
 import * as at from '../constants/ActionTypes';
 
 const defaultState = {
-    bodies: []
+    bodies: [],
+    scrollId: undefined
 };
 
-export default function(state = defaultState, action) {
-    switch(action.type) {
+export default function (state = defaultState, action) {
+    switch (action.type) {
         case at.RECV_TEXT:
             return {
+                ...state,
                 bodies: [
                     ...state.bodies, {
-                    id: action.payload.username,
-                    contents: action.payload.contents,
-                }]
+                        messageId: action.payload.id,
+                        id: action.payload.username,
+                        contents: action.payload.contents,
+                    }],
+                scrollId: action.payload.id
             };
         default:
             return state;

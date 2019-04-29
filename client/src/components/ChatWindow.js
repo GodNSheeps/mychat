@@ -1,5 +1,6 @@
 import React from 'react';
-import MessageContainer from "../containers/MessageContainer";
+import _ from 'lodash';
+import MessagesContainer from "../containers/MessagesContainer";
 
 export default ({windowRef}) => (
     <div className="border border-dark rounded" style={{
@@ -9,6 +10,6 @@ export default ({windowRef}) => (
         paddingTop: '0.25rem',
         overflow: 'auto'
     }} ref={windowRef}>
-        <MessageContainer/>
+        <MessagesContainer windowRef={windowRef}/>
     </div>
 );
