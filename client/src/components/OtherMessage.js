@@ -1,8 +1,10 @@
 import React from 'react';
 import ContentContainer from "./MyMessage";
 
-export default ({body}) => (
-    <div style={{width: '100%', display: 'inline-block'}}>
+export default ({body, addRef}) => (
+    <div
+        ref={el => addRef(el)}
+        style={{width: '100%', display: 'inline-block'}}>
         {body.id}
         <div style={{backgroundColor: 'lightblue',
                     display: 'table',

@@ -18,6 +18,11 @@ export default function (state = defaultState, action) {
                     }],
                 scrollId: action.payload.id
             };
+        case at.CLICK_MENTION:
+            return {
+                ...state,
+                scrollId: action.payload.messageId
+            };
         default:
             return state;
     }

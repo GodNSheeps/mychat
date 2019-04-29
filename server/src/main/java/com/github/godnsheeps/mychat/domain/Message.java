@@ -28,4 +28,6 @@ public class Message {
     private Chat chat;
 
     private List<Content> contents;
+
+    private List<Mention> mentions;
 }

@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as at from "./constants/ActionTypes";
 
 class NullSocket {
-    send(message){
+    send(message) {
         console.log(`Warning: send called on NullSocket, dispatch a connect first`);
     }
 }
@@ -37,6 +37,7 @@ export function getAccessTokenForGithub(code) {
                 console.debug("Recive Access token");
 
                 mychatToken = t.data.token;
+                console.debug(mychatToken);
                 dispatch({
                     type: at.RECV_ACCESS_TOKEN,
                     payload: t.data
@@ -54,6 +55,39 @@ export function getAuthenticated() {
                     payload: result.data
                 });
             });
+    }
+}
+
+export function getMentions() {
+    return dispatch => {
+        axios.get("http://localhost:8080/mentions", {params: {token: mychatToken}})
+            .then(result => {
+                console.debug(result.data)
+                dispatch({
+                    type: at.RECV_MENTION,
+                    payload: result.data
+                })
+            })
+    }
+}
+
+export function clickMention(messageId, index) {
+    return dispatch => dispatch({
+        type: at.CLICK_MENTION,
+        payload: {messageId, index}
+    })
+}
+
+export function readMention(messageId) {
+    return dispatch => {
+        console.debug(messageId);
+        axios.put("http://localhost:8080/mentions", {token: mychatToken, messageId})
+            .then(result => {
+                dispatch({
+                    type: at.READ_MENTION,
+                    payload: {messageId: undefined}
+                })
+            })
     }
 }
 

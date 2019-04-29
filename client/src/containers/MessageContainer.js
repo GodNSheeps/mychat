@@ -13,12 +13,13 @@ class MessageContainer extends React.Component {
     render() {
 
         const {profile} = this.props;
-        const {message} = this.props;
+
+        const {addItemRef, message} = this.props;
         console.debug(message)
         if (message.id === profile.login)
-            return <MyMessage body={message}/>;
+            return <MyMessage addRef={addItemRef(message.messageId)} body={message}/>;
         else
-            return <OtherMessage body={message}/>;
+            return <OtherMessage adRef={addItemRef(message.messageId)} body={message}/>;
     }
 }
 

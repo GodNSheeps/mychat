@@ -6,7 +6,8 @@ export default ({name}) => (
         backgroundColor: 'yellow',
         color: 'black',
         padding: '1%',
-        marginRight: '2%'}}>
+        marginRight: '2%'
+    }}>
         @{name}
     </span>
 )

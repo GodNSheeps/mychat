@@ -18,6 +18,7 @@ import reactor.util.Loggers;
 
 import java.util.*;
 import java.util.regex.*;
+import java.util.stream.Collectors;
 
 /**
  * ChatWebSocketHandler
@@ -72,6 +73,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                                 .collectList()
                                 .map(content ->
                                         ResponsePayload.builder()
+                                                .id(message.getId())
                                                 .username(message.getFrom().getName())
                                                 .contents(content)
                                                 .build())
@@ -81,10 +83,12 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                 .then(session
                         .receive()
                         .doOnComplete(() -> {
+                            System.out.println("???");
                             sessions.remove(session);
                         })
                         .map(Functions.wrapError(m -> objectMapper.readValue(m.getPayloadAsText(), RequestPayload.class)))
                         .flatMap(payload -> {
+                            System.out.println(payload.message);
                             var userId = Jwts.parser().setSigningKey(MyChatServerApplication.SECRET_KEY)
                                     .parseClaimsJws(payload.fromToken)
                                     .getBody().getId();
@@ -114,26 +118,32 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                             return Flux.mergeSequential(contents)
                                     .flatMap(content -> contentRepository.save(content))
                                     .collectList()
-                                    .map(contentList -> messageBuilder.contents(contentList).build());
+                                    .map(contentList -> {
+                                        List<Mention> mentions = contentList.stream().filter(content -> content.isUser())
+                                                .map(content -> Mention.builder().user(content.getUser()).isRead(false).build())
+                                                .collect(Collectors.toList());
+                                        return messageBuilder.mentions(mentions).contents(contentList).build();
+                                    });
                         })
                         .flatMap(message -> messageRepository.save(message))
                         .flatMap(t -> Flux.fromIterable(t.getContents())
-                                            .map(content ->
-                                                ResponseContent.builder()
-                                                    .isUser(content.isUser())
-                                                    .text(content.isUser() ? content.getUser().getName() : content.getText())
-                                                    .build())
-                                            .collectList()
-                                            .map(content ->
-                                                    ResponsePayload.builder()
-                                                    .username(t.getFrom().getName())
-                                                    .contents(content)
-                                                    .build())
+                                .map(content ->
+                                        ResponseContent.builder()
+                                                .isUser(content.isUser())
+                                                .text(content.isUser() ? content.getUser().getName() : content.getText())
+                                                .build())
+                                .collectList()
+                                .map(content ->
+                                        ResponsePayload.builder()
+                                                .id(t.getId())
+                                                .username(t.getFrom().getName())
+                                                .contents(content)
+                                                .build())
                         )
                         .map(Functions.wrapError(objectMapper::writeValueAsString))
                         .flatMap(m -> Flux.fromStream(sessions.stream())
                                 .flatMap(s -> {
-                                       return s.send(Mono.just(s.textMessage(m)));
+                                    return s.send(Mono.just(s.textMessage(m)));
                                 }))
                         .log(log)
                         .collectList()
@@ -150,6 +160,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     @Data
     @Builder
     public static class ResponsePayload {
+        String id;
         String username;
         List<ResponseContent> contents;
     }
@@ -159,5 +170,6 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     public static class ResponseContent {
         boolean isUser;
         String text;
+        String id;
     }
 }

@@ -24,6 +24,13 @@ export default function (state = defaultState, action) {
                     })
                 ]
             };
+        case at.CLICK_MENTION:
+            let mentions = [...state.mentions];
+            mentions.splice(action.payload.index, 1);
+            return {
+                ...state,
+                mentions
+            };
         default:
             return state;
     }
