@@ -5,8 +5,8 @@ export default ({name}) => (
         display: 'table-cell',
         backgroundColor: 'yellow',
         color: 'black',
-        padding: '1%',
-        marginRight: '2%'}}>
+        padding: '0.25rem',
+        marginRight: '0.5rem'}}>
         @{name}
     </span>
 )

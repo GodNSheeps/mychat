@@ -15,7 +15,7 @@ public class Content {
     @Id
     private String id;
 
-    private boolean isUser;
+    private boolean isUser = false;
 
     @DBRef
     @Nullable

@@ -99,22 +99,30 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                                     .chat(t.getT2())
                                     .from(t.getT1());
                             var tokens = message.split(mentionRegex);
+                            List<String> matched = new LinkedList();
                             int i = 0;
-                            List<Mono<Content>> contents = new LinkedList();
-                            contents.add(Mono.just(Content.builder().isUser(false).text(tokens[0]).build()));
+                            if (tokens.length > 0) {
+                                matched.add(tokens[0]);
+                            }
                             while (m.find()) {
-                                var name = m.group();
-                                contents.add(userRepository.findByName(name.substring(1))
-                                        .map(user -> Content.builder().isUser(true).user(user).build())
-                                        .switchIfEmpty(Mono.just(Content.builder().isUser(false).text(name).build())));
+                                matched.add(m.group());
                                 if (tokens.length > ++i) {
-                                    contents.add(Mono.just(Content.builder().isUser(false).text(tokens[i]).build()));
+                                    matched.add(tokens[i]);
                                 }
                             }
-                            return Flux.mergeSequential(contents)
-                                    .flatMap(content -> contentRepository.save(content))
-                                    .collectList()
-                                    .map(contentList -> messageBuilder.contents(contentList).build());
+
+                            return Flux.fromStream(matched.stream())
+                                .flatMapSequential(text -> {
+                                    if (text.startsWith("@")) {
+                                        return userRepository.findByName(text.substring(1))
+                                                .map(user -> Content.builder().isUser(true).user(user).build())
+                                                .switchIfEmpty(Mono.defer(() -> Mono.just(Content.builder().text(text).build())))
+                                                .flatMap(content -> contentRepository.save(content));
+                                    }
+                                    return contentRepository.save(Content.builder().text(text).build());
+                                })
+                                .collectList()
+                                .map(contentList -> messageBuilder.contents(contentList).build());
                         })
                         .flatMap(message -> messageRepository.save(message))
                         .flatMap(t -> Flux.fromIterable(t.getContents())
