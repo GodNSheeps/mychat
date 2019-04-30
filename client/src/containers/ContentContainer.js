@@ -13,7 +13,7 @@ class ContentContainer extends React.Component {
     render() {
         const {contents} = this.props;
         return _.map(contents, (content) => {
-            if (content.user == true) {
+            if (content.user === true) {
                 return <Mention name={content.text}/>
             } else {
                 return <Text text={content.text}/>

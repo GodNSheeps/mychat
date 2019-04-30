@@ -58,23 +58,10 @@ export function getAuthenticated() {
     }
 }
 
-export function getMentions() {
-    return dispatch => {
-        axios.get("http://localhost:8080/mentions", {params: {token: mychatToken}})
-            .then(result => {
-                console.debug(result.data)
-                dispatch({
-                    type: at.RECV_MENTION,
-                    payload: result.data
-                })
-            })
-    }
-}
-
 export function clickMention(messageId, index) {
     return dispatch => dispatch({
         type: at.CLICK_MENTION,
-        payload: {messageId, index}
+        payload: {messageId}
     })
 }
 

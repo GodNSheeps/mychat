@@ -1,9 +1,9 @@
 import React from 'react';
 
-export default ({clickMention, mention}) => (
+export default ({clickMention, mention, index}) => (
     <div className="alert alert-primary"
          onClick={event => {
-             clickMention(mention.messageId, mention.index)
+             clickMention(mention.messageId, index)
          }}>
         <span className="font-weight-bold">{mention.from}</span> 님이 언급하셨습니다.
     </div>

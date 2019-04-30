@@ -12,8 +12,8 @@ class MentionWindowContainer extends React.Component {
         console.debug(mentions);
         return (
             <div className="float-right mt-3">
-                {_.map(mentions, id => {
-                    return <Mentionbar clickMention={clickMention} mention={id}/>;
+                {_.map(mentions, (id, index, mentions) => {
+                    return <Mentionbar clickMention={clickMention} mention={id} index={index}/>;
 
                 })}
             </div>

@@ -2,8 +2,8 @@ import React from 'react';
 
 import {connect} from 'react-redux';
 
-import MyMessage from "../components/MyMessage";
-import OtherMessage from "../components/OtherMessage";
+import MyMessageContainer from "./MyMessageContainer";
+import OtherMessageContainer from "./OtherMessageContainer";
 
 class MessageContainer extends React.Component {
     constructor(props) {
@@ -11,15 +11,12 @@ class MessageContainer extends React.Component {
     }
 
     render() {
-
         const {profile} = this.props;
-
-        const {addItemRef, message} = this.props;
-        console.debug(message)
+        const {message} = this.props;
         if (message.id === profile.login)
-            return <MyMessage addRef={addItemRef(message.messageId)} body={message}/>;
+            return <MyMessageContainer body={message}/>;
         else
-            return <OtherMessage adRef={addItemRef(message.messageId)} body={message}/>;
+            return <OtherMessageContainer body={message}/>;
     }
 }
 

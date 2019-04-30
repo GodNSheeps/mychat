@@ -9,7 +9,6 @@ export default function (state = defaultState, action) {
     switch (action.type) {
         case at.RECV_TEXT:
             return {
-                ...state,
                 bodies: [
                     ...state.bodies, {
                         messageId: action.payload.id,

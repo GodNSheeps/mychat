@@ -1,32 +1,32 @@
 import * as at from '../constants/ActionTypes';
 
 const defaultState = {
-    mentions: [],
-    index: undefined
+    mentions: []
 };
 
 export default function (state = defaultState, action) {
     switch (action.type) {
         case at.RECV_TEXT:
-            let i = 0;
+            const newMentions = _.filter(action.payload.contents, (content) => {
+                return content.user;
+            }).map((content) => {
+                return {
+                    from: action.payload.username,
+                    messageId: action.payload.id
+                }
+            });
+            console.debug(newMentions);
             return {
                 ...state,
                 mentions: [
                     ...state.mentions,
-                    ..._.filter(action.payload.contents, content => {
-                        return content.user;
-                    }).map(content => {
-                        return {
-                            index: i++,
-                            from: action.payload.username,
-                            messageId: action.payload.id
-                        }
-                    })
+                    ...newMentions
                 ]
             };
         case at.CLICK_MENTION:
             let mentions = [...state.mentions];
-            mentions.splice(action.payload.index, 1);
+            let index = action.payload.index;
+            mentions.splice(index, 1);
             return {
                 ...state,
                 mentions

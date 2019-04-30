@@ -1,10 +1,8 @@
 import React from 'react';
-import _ from "lodash";
-import ContentContainer from "../containers/ContentContainer"
+import ContentContainer from "../containers/ContentContainer";
 
-export default ({body,addRef}) => (
+export default ({body}) => (
     <div
-        ref={el => addRef(el)}
         style={{width: '100%', display: 'inline-block'}}>
         <div style={{backgroundColor: 'cornflowerblue',
                     display: 'table',
