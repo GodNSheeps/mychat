@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.godnsheeps.mychat.MyChatServerApplication;
 import com.github.godnsheeps.mychat.domain.*;
 import com.github.godnsheeps.mychat.util.Functions;
+import com.github.godnsheeps.mychat.util.StreamUtils;
 import io.jsonwebtoken.Jwts;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ import reactor.util.Loggers;
 
 import java.util.*;
 import java.util.regex.*;
+import java.util.stream.Stream;
 
 /**
  * ChatWebSocketHandler
@@ -99,19 +101,19 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                                     .chat(t.getT2())
                                     .from(t.getT1());
                             var tokens = message.split(mentionRegex);
-                            List<String> matched = new LinkedList();
-                            int i = 0;
-                            if (tokens.length > 0) {
-                                matched.add(tokens[0]);
-                            }
-                            while (m.find()) {
-                                matched.add(m.group());
-                                if (tokens.length > ++i) {
-                                    matched.add(tokens[i]);
-                                }
-                            }
 
-                            return Flux.fromStream(matched.stream())
+                            Stream<String> regexMatched = m.results().map(MatchResult::group);
+                            Stream<String> regexNotMatched = Arrays.stream(tokens);
+                            Stream<String> result = StreamUtils.zip(regexMatched, regexNotMatched,
+                                    (name, token) -> {
+                                        if (token.length() == 0) return Stream.of(name);
+                                        else return Stream.of(token, name);
+                                    },
+                                    (name) -> Stream.of(name),
+                                    (token) -> Stream.of(token)
+                                    ).flatMap(s -> s);
+
+                            return Flux.fromStream(result)
                                 .flatMapSequential(text -> {
                                     if (text.startsWith("@")) {
                                         return userRepository.findByName(text.substring(1))
