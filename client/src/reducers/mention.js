@@ -15,7 +15,6 @@ export default function (state = defaultState, action) {
                     messageId: action.payload.id
                 }
             });
-            console.debug(newMentions);
             return {
                 ...state,
                 mentions: [

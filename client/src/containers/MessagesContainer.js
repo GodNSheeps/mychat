@@ -1,8 +1,6 @@
 import React from 'react';
 import _ from "lodash";
 import {connect} from "react-redux";
-import {bindActionCreators} from "redux";
-import {readMention} from "../actions";
 import MessageContainer from "./MessageContainer";
 
 class MessagesContainer extends React.Component {
@@ -18,4 +16,4 @@ class MessagesContainer extends React.Component {
     }
 }
 
-export default connect(s => s.chat, d => bindActionCreators({readMention}, d))(MessagesContainer);
+export default connect(s => s.chat)(MessagesContainer);

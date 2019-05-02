@@ -11,9 +11,8 @@ class ChatWindowContainer extends React.Component {
 
     render() {
         console.debug("Render chat window");
-        const {window} = this.props;
         return (
-            <ChatWindow windowRef={window}/>
+            <ChatWindow />
         );
     }
 }

@@ -37,7 +37,6 @@ export function getAccessTokenForGithub(code) {
                 console.debug("Recive Access token");
 
                 mychatToken = t.data.token;
-                console.debug(mychatToken);
                 dispatch({
                     type: at.RECV_ACCESS_TOKEN,
                     payload: t.data
@@ -59,10 +58,14 @@ export function getAuthenticated() {
 }
 
 export function clickMention(messageId, index) {
-    return dispatch => dispatch({
-        type: at.CLICK_MENTION,
-        payload: {messageId}
-    })
+    return dispatch => {
+        console.debug(messageId, index);
+        dispatch({
+
+            type: at.CLICK_MENTION,
+            payload: {messageId, index}
+        })
+    }
 }
 
 export function readMention(messageId) {

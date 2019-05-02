@@ -11,8 +11,7 @@ class MessageContainer extends React.Component {
     }
 
     render() {
-        const {profile} = this.props;
-        const {message} = this.props;
+        const {profile, message} = this.props;
         if (message.id === profile.login)
             return <MyMessageContainer body={message}/>;
         else
