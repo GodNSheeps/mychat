@@ -1,7 +1,7 @@
 import React from 'react';
 import MessageContainer from "../containers/MessageContainer";
 
-export default ({windowRef, name, bodies}) => (
+export default ({windowRef}) => (
     <div className="border border-dark rounded" style={{
         width: '100%',
         height: '20rem',

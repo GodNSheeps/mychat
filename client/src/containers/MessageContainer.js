@@ -21,8 +21,8 @@ class MessageContainer extends React.Component {
     }
 }
 
-function mapToPropsState(state) {
-    return {"chat": state.chat, "oauth": state.oauth};
+function mapToPropsState({chat, oauth}) {
+    return {chat, oauth};
 }
 
 export default connect(mapToPropsState)(MessageContainer);
