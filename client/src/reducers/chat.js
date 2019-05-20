@@ -7,12 +7,11 @@ const defaultState = {
 export default function(state = defaultState, action) {
     switch(action.type) {
         case at.RECV_TEXT:
-            console.log("--", action);
             return {
                 bodies: [
                     ...state.bodies, {
                     id: action.payload.username,
-                    text: action.payload.text,
+                    contents: action.payload.contents,
                 }]
             };
         default:
