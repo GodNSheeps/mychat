@@ -1,11 +1,12 @@
 import $ from 'jquery';
 import React from 'react';
-import {sendText, checkMentionEffectvie, startMentioning, finishMentioning} from '../actions';
+import {sendText, checkMentionEffectvie, startMentioning, finishMentioning, mentionedMyself} from '../actions';
 import {connect} from "react-redux";
 import {bindActionCreators} from "redux";
 import _ from "lodash";
 
 import ChatInput from "../components/ChatInput";
+import {ChatInputRules, ChatInputRulesCommand} from "./ChatInputRules";
 
 const getComponentType = (term) => ({
     mention: "<span style='background: #EAF5F9; color: #2E7CF6'>" + term + "</span>",
@@ -14,17 +15,29 @@ const getComponentType = (term) => ({
 });
 const caretPosition = 'caretPosition';
 
+const IS_NEW_MENTION = "IS_NEW_MENTION";
+const IS_FIRST_MENTION = "IS_FIRST_MENTION";
+const IS_FOCUSED = "IS_FOCUSED";
+const MENTION_REGEX = /^@/;
+
 class ChatInputContainer extends React.Component {
 
     constructor(props){
         super(props);
         this.$inputElem = React.createRef();
-        this.$caretPosition = React.createRef();
         this.prevInputString = '';
         this.mentionStartIndex = -1;
         this.needHighlighting = false;
         this.terms = [];
         this.prevTerms = [];
+
+        this.chatInputRules = new ChatInputRules();
+        this.chatInputRules.addRule(IS_NEW_MENTION, function (params){
+            return !params["prevTerms"].includes(params["term"])
+                && params['regex'].exec(params["term"]) != null
+        }).addRule(IS_FOCUSED, function(params){
+            return params['mentionStartIndex'] === params['termIndex'];
+        }).addRule(IS_FIRST_MENTION, function(params) { return params["mentionStartIndex"] < 0 });
     }
 
     handleSendText(e) {
@@ -49,12 +62,14 @@ class ChatInputContainer extends React.Component {
                 this.props.checkMentionEffectvie(term.substring(1, term.length));
             }
 
-            if(!this.prevTerms.includes(term) && term.startsWith('@') && this.mentionStartIndex < 0 ){
-                this.props.startMentioning(term.substring(1, term.length));
-                this.mentionStartIndex = index;
-            } else if(!this.prevTerms.includes(term) && term.startsWith('@') || this.mentionStartIndex === index){
-                this.props.startMentioning(term.substring(1, term.length));
-            }
+            let params = {'prevTerms': this.prevTerms,
+                'term': term, 'regex': MENTION_REGEX, 'mentionStartIndex': this.mentionStartIndex, 'termIndex':index};
+
+            let startMentioningCommand = new ChatInputRulesCommand(this.props.startMentioning, term.substring(1, term.length));
+            let saveMentionStartIndex = new ChatInputRulesCommand((i) => {this.mentionStartIndex = i}, index);
+
+            this.chatInputRules.run(params).when(IS_NEW_MENTION).or(IS_FOCUSED).then(startMentioningCommand);
+            this.chatInputRules.run(params).when(IS_FIRST_MENTION).require(IS_NEW_MENTION).then(saveMentionStartIndex);
 
             if(ev.key === ' ' && this.mentionStartIndex >= 0) {
                 this.props.finishMentioning();
@@ -73,8 +88,13 @@ class ChatInputContainer extends React.Component {
         $(this.$inputElem.current).empty();
         const {chatInput} = this.props;
         this.needHighlighting = false;
+        let isMentionedMyself = false;
         _.map(this.terms, (term, index) => {
-            if(chatInput.mentions.includes(term)){
+            if(term.substring(1,term.length) === this.props.oauth.profile.login){
+                this.props.mentionedMyself();
+                isMentionedMyself = true;
+            }
+            else if(chatInput.mentions.includes(term)){
                 var mentionSpan = $(getComponentType(term)['mention']);
                 $(this.$inputElem.current).append(mentionSpan);
             } else if(term.length === 0 && index < this.terms.length - 1){
@@ -82,9 +102,13 @@ class ChatInputContainer extends React.Component {
             } else {
                 $(this.$inputElem.current).append(getComponentType(term)["plainText"]);
             }
-            if(term.length !== 0 || index !== this.terms.length -1){
+
+            if((term.length !== 0 || index !== this.terms.length -1) && !isMentionedMyself){
                 $(this.$inputElem.current).append(" ");
+            }else {
+                isMentionedMyself = false;
             }
+
             if(this.mentionStartIndex === index){
                 this.mentionStartIndex = -1;
                 $(this.$inputElem.current).append(getComponentType()['caretSpan']);
@@ -139,4 +163,4 @@ class ChatInputContainer extends React.Component {
 }
 
 export default connect(s => {return {"oauth": s.oauth,"chatInput": s.chatInput}},
-        d => bindActionCreators({sendText, checkMentionEffectvie, startMentioning, finishMentioning},d))(ChatInputContainer);
+        d => bindActionCreators({sendText, checkMentionEffectvie, startMentioning, finishMentioning, mentionedMyself},d))(ChatInputContainer);
