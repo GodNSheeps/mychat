@@ -1,20 +1,21 @@
 import * as at from '../constants/ActionTypes';
 
 const defaultState = {
-    bodies: []
-};
+    isNeedShowing: false
+}
 
 export default function(state = defaultState, action) {
     switch(action.type) {
-        case at.RECV_TEXT:
+        case at.METIONED_MYSELF:
             return {
-                bodies: [
-                    ...state.bodies, {
-                    id: action.payload.username,
-                    text: action.payload.text,
-                }]
+                isNeedShowing: true
+            };
+        case at.CLOSE_MODAL:
+            return {
+                isNeedShowing: false
             };
         default:
             return state;
+
     }
-};
+}
