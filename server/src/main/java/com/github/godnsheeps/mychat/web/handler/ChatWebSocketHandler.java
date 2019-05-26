@@ -2,10 +2,7 @@ package com.github.godnsheeps.mychat.web.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.godnsheeps.mychat.MyChatServerApplication;
-import com.github.godnsheeps.mychat.domain.ChatRepository;
-import com.github.godnsheeps.mychat.domain.Message;
-import com.github.godnsheeps.mychat.domain.MessageRepository;
-import com.github.godnsheeps.mychat.domain.UserRepository;
+import com.github.godnsheeps.mychat.domain.*;
 import com.github.godnsheeps.mychat.util.Functions;
 import io.jsonwebtoken.Jwts;
 import lombok.Builder;
@@ -19,9 +16,9 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.regex.*;
+import java.util.stream.Collectors;
 
 /**
  * ChatWebSocketHandler
@@ -39,16 +36,22 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     private MessageRepository messageRepository;
     private ChatRepository chatRepository;
     private UserRepository userRepository;
+    private ContentRepository contentRepository;
+
+    private String mentionRegex = "\\B@([\\S]+)";
+    private Pattern pattern = Pattern.compile(mentionRegex);
 
     @Autowired
     public ChatWebSocketHandler(ObjectMapper objectMapper,
                                 MessageRepository messageRepository,
                                 ChatRepository chatRepository,
-                                UserRepository userRepository) {
+                                UserRepository userRepository,
+                                ContentRepository contentRepository) {
         this.objectMapper = objectMapper;
         this.messageRepository = messageRepository;
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
+        this.contentRepository = contentRepository;
     }
 
     @Override
@@ -57,21 +60,35 @@ public class ChatWebSocketHandler implements WebSocketHandler {
 
         log.trace("sessions: {}", sessions.size());
 
-
         return session.send(
                 chatRepository.findById(MyChatServerApplication.rootChatId)
                         .flux()
                         .flatMap(chat -> messageRepository.findByChat(chat))
-                        .map(message -> ResponsePayload.builder().text(message.getText()).username(message.getFrom().getName()).build())
+                        .flatMap(message -> Flux.fromIterable(message.getContents())
+                                .map(content ->
+                                        ResponseContent.builder()
+                                                .isUser(content.isUser())
+                                                .text(content.isUser() ? content.getUser().getName() : content.getText())
+                                                .build())
+                                .collectList()
+                                .map(content ->
+                                        ResponsePayload.builder()
+                                                .id(message.getId())
+                                                .username(message.getFrom().getName())
+                                                .contents(content)
+                                                .build())
+                                .single())
                         .map(Functions.wrapError(objectMapper::writeValueAsString))
                         .map(session::textMessage))
                 .then(session
                         .receive()
                         .doOnComplete(() -> {
+                            System.out.println("???");
                             sessions.remove(session);
                         })
                         .map(Functions.wrapError(m -> objectMapper.readValue(m.getPayloadAsText(), RequestPayload.class)))
                         .flatMap(payload -> {
+                            System.out.println(payload.message);
                             var userId = Jwts.parser().setSigningKey(MyChatServerApplication.SECRET_KEY)
                                     .parseClaimsJws(payload.fromToken)
                                     .getBody().getId();
@@ -81,20 +98,53 @@ public class ChatWebSocketHandler implements WebSocketHandler {
                         })
                         .flatMap(t -> {
                             var message = t.getT3().message;
-                            return Mono.zip(Mono.just(message),
-                                    messageRepository.save(Message.builder()
-                                            .chat(t.getT2())
-                                            .from(t.getT1())
-                                            .text(message)
-                                            .build()));
+                            var m = pattern.matcher(message);
+                            var messageBuilder = Message.builder()
+                                    .chat(t.getT2())
+                                    .from(t.getT1());
+                            var tokens = message.split(mentionRegex);
+                            int i = 0;
+                            List<Mono<Content>> contents = new LinkedList();
+                            contents.add(Mono.just(Content.builder().isUser(false).text(tokens[0]).build()));
+                            while (m.find()) {
+                                var name = m.group();
+                                contents.add(userRepository.findByName(name.substring(1))
+                                        .map(user -> Content.builder().isUser(true).user(user).build())
+                                        .switchIfEmpty(Mono.just(Content.builder().isUser(false).text(name).build())));
+                                if (tokens.length > ++i) {
+                                    contents.add(Mono.just(Content.builder().isUser(false).text(tokens[i]).build()));
+                                }
+                            }
+                            return Flux.mergeSequential(contents)
+                                    .flatMap(content -> contentRepository.save(content))
+                                    .collectList()
+                                    .map(contentList -> {
+                                        List<Mention> mentions = contentList.stream().filter(content -> content.isUser())
+                                                .map(content -> Mention.builder().user(content.getUser()).isRead(false).build())
+                                                .collect(Collectors.toList());
+                                        return messageBuilder.mentions(mentions).contents(contentList).build();
+                                    });
                         })
-                        .map(t -> ResponsePayload.builder()
-                                .text(t.getT1())
-                                .username(t.getT2().getFrom().getName())
-                                .build())
+                        .flatMap(message -> messageRepository.save(message))
+                        .flatMap(t -> Flux.fromIterable(t.getContents())
+                                .map(content ->
+                                        ResponseContent.builder()
+                                                .isUser(content.isUser())
+                                                .text(content.isUser() ? content.getUser().getName() : content.getText())
+                                                .build())
+                                .collectList()
+                                .map(content ->
+                                        ResponsePayload.builder()
+                                                .id(t.getId())
+                                                .username(t.getFrom().getName())
+                                                .contents(content)
+                                                .build())
+                        )
                         .map(Functions.wrapError(objectMapper::writeValueAsString))
                         .flatMap(m -> Flux.fromStream(sessions.stream())
-                                .flatMap(s -> s.send(Mono.just(s.textMessage(m)))))
+                                .flatMap(s -> {
+                                    return s.send(Mono.just(s.textMessage(m)));
+                                }))
                         .log(log)
                         .collectList()
                 )
@@ -110,7 +160,16 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     @Data
     @Builder
     public static class ResponsePayload {
+        String id;
         String username;
+        List<ResponseContent> contents;
+    }
+
+    @Data
+    @Builder
+    public static class ResponseContent {
+        boolean isUser;
         String text;
+        String id;
     }
 }

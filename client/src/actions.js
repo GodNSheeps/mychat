@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as at from "./constants/ActionTypes";
 
 class NullSocket {
-    send(message){
+    send(message) {
         console.log(`Warning: send called on NullSocket, dispatch a connect first`);
     }
 }
@@ -21,7 +21,6 @@ export function joinChat() {
     socket = new WebSocket("ws://localhost:8080/chat");
     return dispatch => {
         socket.onmessage = msg => {
-            console.log("receive test");
             const payload = JSON.parse(msg.data);
             dispatch({
                 type: at.RECV_TEXT,
@@ -55,6 +54,30 @@ export function getAuthenticated() {
                     payload: result.data
                 });
             });
+    }
+}
+
+export function clickMention(messageId, index) {
+    return dispatch => {
+        console.debug(messageId, index);
+        dispatch({
+
+            type: at.CLICK_MENTION,
+            payload: {messageId, index}
+        })
+    }
+}
+
+export function readMention(messageId) {
+    return dispatch => {
+        console.debug(messageId);
+        axios.put("http://localhost:8080/mentions", {token: mychatToken, messageId})
+            .then(result => {
+                dispatch({
+                    type: at.READ_MENTION,
+                    payload: {messageId: undefined}
+                })
+            })
     }
 }
 

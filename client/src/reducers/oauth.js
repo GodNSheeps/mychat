@@ -9,8 +9,6 @@ const defaultState = {
 export default function(state = defaultState, action) {
     switch(action.type) {
         case at.RECV_ACCESS_TOKEN:
-            console.log("action type: " + RECV_ACCESS_TOKEN);
-            console.log(action);
             return {
                 accessed: true,
                 payload: action.payload,

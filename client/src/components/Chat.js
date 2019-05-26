@@ -1,5 +1,6 @@
 import React from 'react';
 import ChatWindowContainer from "../containers/ChatWindowContainer";
+import MentionsWindow from "./MentionsWindow";
 
 export default ({name, handleSendText}) => (
     <div className="container">
@@ -20,6 +21,7 @@ export default ({name, handleSendText}) => (
                         </div>
                     </div>
                 </form>
+                <MentionsWindow />
             </div>
             <div className="col-1" />
         </div>

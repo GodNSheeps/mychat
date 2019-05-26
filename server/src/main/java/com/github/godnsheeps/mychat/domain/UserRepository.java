@@ -8,4 +8,6 @@ import reactor.core.publisher.Mono;
  */
 public interface UserRepository extends ReactiveMongoRepository<User, String> {
     Mono<User> findByGithubId(Integer githubId);
+
+    Mono<User> findByName(String name); // Suppose that name is unique.
 }
